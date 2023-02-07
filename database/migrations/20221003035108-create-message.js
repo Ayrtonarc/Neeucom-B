@@ -40,3 +40,5 @@ module.exports = {
     await queryInterface.dropTable('Messages');
   }
 };
+
+//CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

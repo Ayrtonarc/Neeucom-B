@@ -14,6 +14,12 @@ module.exports = {
       let user = context;
       if(!user) throw new AuthenticationError('Required Auth');
       return await User.findAll();
+    },
+
+    async getProfile(root, args, context){
+      let user = context;
+      if(!user) throw new AuthenticationError('Required Auth');
+      return await User.findOne({where: {id: args.id}});
     }
   },
 
