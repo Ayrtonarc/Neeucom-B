@@ -6,6 +6,7 @@ const { AuthenticationError, UserInputError } = require('apollo-server-express')
 const { EMAIL_PATTERN } = require('../../utils/globalconstants');
 const  {User}  = require('../../database/models');
 const { Op } = require('sequelize');
+const { fromCursorHash, toCursorHash} = require('../../utils/cursors');
 
 module.exports = {
 
@@ -13,7 +14,32 @@ module.exports = {
     async getAllUsers(root, args, context){
       let user = context;
       if(!user) throw new AuthenticationError('Required Auth');
-      return await User.findAll();
+      const  { limit, cursor } = args;
+
+      var cursorOptions  = cursor
+      
+
+      // return await User.findAll();
+
+      const paginatedUsers = await User.findAll({
+        ...cursorOptions,
+        limit: limit + 1,
+        order: [ ['createdAt', 'DESC']],
+      });
+
+      const hasNextPage = paginatedUsers.lenght > limit;
+      const edges = hasNextPage ? paginatedUsers.slice(0, -1) : paginatedUsers;
+      const startCursor = edges.length > 0 ? edges[0].createdAt : '';
+
+      return {
+        edges,
+        pageInfo: {
+          hasNextPage,
+          startCursor: toCursorHash(startCursor),
+          endCursor: toCursorHash(edges[edges.length - 1]?.createdAt),
+        },
+      };
+
     },
 
     async getProfile(root, args, context){
