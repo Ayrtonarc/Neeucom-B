@@ -14,6 +14,8 @@ extend type Query {
  extend type Mutation {
      register(firstname: String!, lastname: String!, username: String!, password: String!, email: String! ): RegisterResponse
      login(email: String!, password: String!): LoginResponse
+     updateUserInfo(firstname: String!, lastname: String!, username: String! bio: String!) : User
+
  }
 
  type User {
@@ -22,6 +24,7 @@ extend type Query {
      lastname: String!
      username: String!
      email: String!
+     bio: String!
  }
 
  type RegisterResponse {
@@ -40,6 +43,7 @@ extend type Query {
     token: String!
  }
 
+
  type GetAllUsersV1 {
     edges: [User]
     pageInfo: PageInfo!
@@ -50,4 +54,5 @@ extend type Query {
     startCursor: String!
     endCursor: String!
   }
+
 `;
