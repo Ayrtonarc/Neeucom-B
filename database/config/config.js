@@ -5,7 +5,7 @@ require('dotenv').config();
 module.exports = {
   development: {
     username: 'postgres',
-    password: 'admin',
+    password: 'ADMIN',
     database: 'neeucomdb',
     host: '127.0.0.1',
     dialect: 'postgres',
