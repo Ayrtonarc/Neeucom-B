@@ -20,7 +20,7 @@ module.exports = {
       var cursorOptions  = cursor
       
 
-      // return await User.findAll();
+      // paginacion basarse en el futuro en esto
 
       const paginatedUsers = await User.findAll({
         ...cursorOptions,
