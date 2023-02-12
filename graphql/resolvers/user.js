@@ -50,14 +50,17 @@ module.exports = {
     async updateUserInfo(root, args, context){
       const { user } = context;
       if(!user) throw new AuthenticationError('Required Auth');
-      console.log("user",JSON.parse(JSON.stringify(user)));
+      //console.log("user",JSON.parse(JSON.stringify(user)));
       const {firstname,lastname, username, bio} = args;
 
-      let updateUser = await User.update({firstname,lastname,username,bio}, {where:{ id: user.id} })
+      await User.update({firstname,lastname,username,bio}, {where:{ id: user.id} })
 
-      updateUser = await User.save();
 
-      return updateUser;
+      //console.log("user",JSON.parse(JSON.stringify(updateUser)));
+      //return updateUser;
+
+      const updatedInfo = await User.findOne({where:{ id: user.id}})
+      return updatedInfo;
     }
   },
 };
