@@ -7,7 +7,7 @@ module.exports = gql`
 
 
 extend type Query {
-    getAllUsers : [User]
+    getAllUsers,(cursor: String, limit: Int!): GetAllUsersV1
     getProfile(id: String!) : User
 }
 
@@ -42,5 +42,17 @@ extend type Query {
     username: String!
     token: String!
  }
+
+
+ type GetAllUsersV1 {
+    edges: [User]
+    pageInfo: PageInfo!
+  }
+
+  type PageInfo {
+    hasNextPage: Boolean!
+    startCursor: String!
+    endCursor: String!
+  }
 
 `;
