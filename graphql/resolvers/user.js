@@ -12,9 +12,9 @@ module.exports = {
 
   Query: {
     async getAllUsers(root, args, context){
-      let user = context;
+      let { user } = context;
       if(!user) throw new AuthenticationError('Required Auth');
-      const  { limit, cursor } = args;
+      const  { cursor, limit } = args;
 
       var cursorOptions  = cursor
       
