@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
 const { EMAIL_PATTERN } = require('../../utils/globalconstants');
 const  {User}  = require('../../database/models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 module.exports = {
 
@@ -46,5 +46,18 @@ module.exports = {
       }
       throw new AuthenticationError('Invalid credentials');
     },
+
+    async updateUserInfo(root, args, context){
+      const { user } = context;
+      if(!user) throw new AuthenticationError('Required Auth');
+      console.log("user",JSON.parse(JSON.stringify(user)));
+      const {firstname,lastname, username, bio} = args;
+
+      let updateUser = await User.update({firstname,lastname,username,bio}, {where:{ id: user.id} })
+
+      updateUser = await User.save();
+
+      return updateUser;
+    }
   },
 };
