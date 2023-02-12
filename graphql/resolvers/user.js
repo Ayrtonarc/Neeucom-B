@@ -40,7 +40,7 @@ module.exports = {
           endCursor: toCursorHash(edges[edges.length - 1]?.createdAt),
         },
       };
-
+      //Paginacion
     },
 
     async getProfile(root, args, context){
