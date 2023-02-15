@@ -27,6 +27,14 @@ extend type Query {
      bio: String!
  }
 
+ type UserResponse {
+     id: String!
+     firstname: String!
+     lastname: String!
+     username: String!
+     email: String!
+ }
+
  type RegisterResponse {
     id: String!
     firstname: String
@@ -45,7 +53,7 @@ extend type Query {
 
 
  type GetAllUsersV1 {
-    edges: [User]
+    edges: [UserResponse]
     pageInfo: PageInfo!
   }
 
