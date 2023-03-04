@@ -4,7 +4,14 @@ module.exports = gql `
 scalar Date
 
 extend type Mutation {
-    follow(follow: String!) : FollowResponse
+    followUser(id: String!) : FollowResponse
 }
+
+type FollowResponse {
+     id: String!
+     firstname: String!
+     lastname: String!
+     username: String!
+ }
 
 `
