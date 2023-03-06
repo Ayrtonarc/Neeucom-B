@@ -9,9 +9,7 @@ extend type Mutation {
 
 type FollowResponse {
      id: String!
-     firstname: String!
-     lastname: String!
-     username: String!
+     
  }
 
 `

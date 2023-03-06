@@ -45,7 +45,7 @@ module.exports = {
             
 
             })
-            console.log("Zahori-----------", JSON.stringify(user,null,4))
+           // console.log("Zahori-----------", JSON.stringify(user,null,4))
             return newmessage;
 
             

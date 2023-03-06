@@ -11,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Follow.belongsTo(models.User, {foreignKey: 'userId', as: 'follow'});
-      Follow.belongsTo(models.User, {foreignKey: 'followedId', as: 'userFollowed'});
+      Follow.belongsTo(models.User, {foreignKey: 'user', as: 'follow'});
+      Follow.belongsTo(models.User, {foreignKey: 'followed', as: 'userFollowed'});
     }
   }
   Follow.init({
@@ -26,7 +26,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       field: "createdAt",
       defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+    },
+    updatedAt: {
+      type: "TIMESTAMP",
+      allowNull: false,
+      field: "updatedAt",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     }
+
 
   }, {
     sequelize,
