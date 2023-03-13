@@ -11,17 +11,28 @@ module.exports = {
        async followUser(root, args, context){
         let { user } = context;
         let  { id }  = args;
-        console.log("Dezzeer---",JSON.parse(JSON.stringify(user,null,4)));
+        //console.log("Dezzeer---",JSON.parse(JSON.stringify(user,null,4)));
         if(!user) throw new AuthenticationError('Se requiere autenticacion');
         
 
         let newFollow = await Follow.create({user: user.id, followed: id})
         
+        let followedUser = await Follow.findOne({where: { followed: id }})
+        return followedUser;
         
-        return newFollow;
-        
+       },
+
+
+       async unFollowUser(root, args, context){
+        let { user } = context;
+        if(!user) throw new AuthenticationError('Se requiere autenticacion');
+        let { id } = args;
+
+        await Follow.destroy({ where: { followed: id }});
+
        }
     }
+
 }
 
 
