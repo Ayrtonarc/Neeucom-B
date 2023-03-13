@@ -29,7 +29,10 @@ module.exports = {
         let { id } = args;
 
         await Follow.destroy({ where: { followed: id }});
-
+        return {
+            success: true,
+            msg: "Se dejo de seguir este usuario",
+          };
        }
     }
 

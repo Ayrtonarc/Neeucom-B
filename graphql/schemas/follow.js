@@ -14,7 +14,9 @@ type FollowResponse {
  }
  
 type unFollowResponse {
-     id: String
+    
+    success: Boolean
+    msg: String
 }
 
 `
