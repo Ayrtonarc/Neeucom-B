@@ -12,7 +12,7 @@ type MessageResponse {
     updatedAt: Date
 }
 extend type Query{
-    getAllMessages : [MessageResponse]
+    getAllMessages(from: String! ) : [MessageResponse]
 }
 
 extend type Mutation {
