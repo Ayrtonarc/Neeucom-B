@@ -6,12 +6,12 @@ const { Op } = require('sequelize')
 module.exports = {
 
     Query: {
-        async getAllMessages (root, args, context){
+        async getMessages (root, args, context){
             let { user } = context;
             if(!user) throw new AuthenticationError('Se requiere autenticacion');
 
             const otherUser = await User.findOne({
-                where : { username: from }
+                where : { username: args }
             })
             if(!otherUser) throw new UserInputError('Usuario no existe');
             
