@@ -6,28 +6,28 @@ const { Op } = require('sequelize')
 module.exports = {
 
     Query: {
-        async getMessages (root, args, context){
+        async getMessages(root, args, context) {
             let { user } = context;
-            if(!user) throw new AuthenticationError('Se requiere autenticacion');
-
-            const otherUser = await User.findOne({
-                where : { username: args }
-            })
-            if(!otherUser) throw new UserInputError('Usuario no existe');
+            let  { from }  = args;
+            if (!user) throw new AuthenticationError('Se requiere autenticacion');
             
-            const usernames = [user.username, otherUser.usernane ]
-
-
-            let myMessages = await Message.findAll({
-                where: { 
+            const otherUser = await User.findOne({
+                where: { username: from  }
+            });
+            console.log("Dezzeer---",JSON.parse(JSON.stringify(otherUser,null,4)));
+            if (!otherUser) throw new UserInputError('Usuario no existe');
+        
+            const usernames = [ user.username, otherUser.username ]
+        
+            let messages = await Message.findAll({
+                where: {
                     from: { [Op.in]: usernames},
-                    to: {[Op.in]: usernames }
-
+                    to: { [Op.in]:  usernames}
                 },
                 order: [['createdAt', 'DESC']],
-            })
-
-            return myMessages
+            });
+        
+            return messages;
         }
     },
     
