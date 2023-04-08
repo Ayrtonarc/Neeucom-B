@@ -3,7 +3,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
-const { EMAIL_PATTERN } = require('../../utils/globalconstants');
+const { EMAIL_PATTERN, USERNAME_VALIDATOR } = require('../../utils/globalconstants');
 const  {User}  = require('../../database/models');
 
 const { Op, where } = require('sequelize');
@@ -55,10 +55,16 @@ module.exports = {
       let { firstname, lastname, username, email, password } = args;
       email = email.trim().toLowerCase();
       let user = await User.findOne({ where: { email } });
-
+      // if (username && username?.length < 2 || username?.length>14) throw new UserInputError("Nombre de usuario invalido");
+      // if (!USERNAME_VALIDATOR.test(username)) throw new UserInputError("username no permite esos caracteres");
       if(user) throw new UserInputError("Este email ya esta registrado");
       if (!EMAIL_PATTERN.test(email)) throw new UserInputError("email no valido");
       //console.log("argsssss",args);
+
+      let usrvalidation = await User.findOne({ where: { username }});
+      if(usrvalidation) throw new UserInputError("Este username ya esta en uso");
+      if (username && username?.length < 2 || username?.length>14) throw new UserInputError("Nombre de usuario invalido");
+       if (!USERNAME_VALIDATOR.test(username)) throw new UserInputError("username no permite esos caracteres");
       return await User.create({firstname, lastname, username, email, password })
      },
 
