@@ -55,8 +55,6 @@ module.exports = {
       let { firstname, lastname, username, email, password } = args;
       email = email.trim().toLowerCase();
       let user = await User.findOne({ where: { email } });
-      // if (username && username?.length < 2 || username?.length>14) throw new UserInputError("Nombre de usuario invalido");
-      // if (!USERNAME_VALIDATOR.test(username)) throw new UserInputError("username no permite esos caracteres");
       if(user) throw new UserInputError("Este email ya esta registrado");
       if (!EMAIL_PATTERN.test(email)) throw new UserInputError("email no valido");
       //console.log("argsssss",args);

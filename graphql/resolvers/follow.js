@@ -7,6 +7,22 @@ const { fromCursorHash, toCursorHash} = require('../../utils/cursors');
 
 
 module.exports = {
+    Query: {
+        //obtener usuarios que sigue un usuario  
+        async following(root, args, context){
+            let { user } = context;
+            let {} = args;
+            if(!user) throw new AuthenticationError('Se requiere autenticacion');
+
+            let followingUsers 
+
+        },
+        // async followers(root, args, contex){
+        //usuarios que me siguen
+        // }
+
+    },
+
     Mutation: {
        async followUser(root, args, context){
         let { user } = context;
