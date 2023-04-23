@@ -11,10 +11,18 @@ module.exports = {
         //obtener usuarios que sigue un usuario  
         async following(root, args, context){
             let { user } = context;
-            let {} = args;
+            let { userId }   = args;
+            
+             console.log("Dezzeer---",userId);
             if(!user) throw new AuthenticationError('Se requiere autenticacion');
 
-            let followingUsers 
+            // if(!userId) throw new UserInputError('El id no existe');
+
+            
+            let followingUsers  = await Follow.findAll({
+                where: { user: userId },
+            })
+            return followingUsers;
 
         },
         // async followers(root, args, contex){
