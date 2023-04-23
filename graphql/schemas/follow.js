@@ -4,7 +4,7 @@ module.exports = gql `
 scalar Date
 
 extend type Query {
-    following(id: String) : [GenericResponse]
+    getFollowing(id: String) : [FollowResponse]
 }
 
 

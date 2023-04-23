@@ -9,7 +9,7 @@ const { fromCursorHash, toCursorHash} = require('../../utils/cursors');
 module.exports = {
     Query: {
         //obtener usuarios que sigue un usuario  
-        async following(root, args, context){
+        async getFollowing(root, args, context){
             let { user } = context;
             let { id } = args;
             
