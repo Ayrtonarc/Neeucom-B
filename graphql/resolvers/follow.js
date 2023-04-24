@@ -21,6 +21,12 @@ module.exports = {
             
             let followingUsers  = await Follow.findAll({
                 where: { user: id },
+                include: [{ 
+                    atributes: ['id', 'username', 'firstname', 'lastname','bio'],
+                    model: User, required: true, as: 'follow',
+                    include: [{ model: Follow, as: 'followed', required: false, where: { userId: userId } }]
+
+                }]
             })
             return followingUsers;
 
