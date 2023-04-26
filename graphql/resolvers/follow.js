@@ -27,7 +27,7 @@ module.exports = {
                     include: [{ model: Follow, as: 'followed', required: false, where: { userId: userId } }]
 
                 }]
-            })
+            });
             return followingUsers;
 
         },
