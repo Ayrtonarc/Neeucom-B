@@ -12,10 +12,10 @@ module.exports = {
         primaryKey: true
       },
       user: {
-        type: Sequelize.STRING
+        type: Sequelize.UUID
       },
       followed: {
-        type: Sequelize.STRING
+        type: Sequelize.UUID
       },
       createdAt: {
         allowNull: false,

@@ -16,6 +16,7 @@ extend type Mutation {
 type FollowResponse {
      followed: String!
      
+     
  }
  
 type unFollowResponse {

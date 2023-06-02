@@ -17,9 +17,9 @@ module.exports = (sequelize, DataTypes) => {
   }
   Follow.init({
 
-    user: DataTypes.STRING,
+    user: DataTypes.UUID,
 
-    followed: DataTypes.STRING,
+    followed: DataTypes.UUID,
 
     createdAt: {
       type: "TIMESTAMP",

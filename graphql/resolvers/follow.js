@@ -13,7 +13,7 @@ module.exports = {
             let { user } = context;
             let { id } = args;
             
-             console.log("Dezzeer---",id);
+            //  console.log("Dezzeer---",id);
             if(!user) throw new AuthenticationError('Se requiere autenticacion');
 
             // if(!userId) throw new UserInputError('El id no existe');
@@ -22,12 +22,13 @@ module.exports = {
             let followingUsers  = await Follow.findAll({
                 where: { user: id },
                 include: [{ 
-                    atributes: ['id', 'username', 'firstname', 'lastname','bio'],
+                    attributes: ['id', 'username', 'firstname', 'lastname','bio'],
                     model: User, required: true, as: 'follow',
-                    include: [{ model: Follow, as: 'followed', required: false, where: { userId: userId } }]
+                    include: [{ model: Follow, as: 'followed', required: false, where: { user: id } }]
 
                 }]
             });
+            console.log("Dezzeer---",JSON.parse(JSON.stringify(followingUsers,null,4)));
             return followingUsers;
 
         },
