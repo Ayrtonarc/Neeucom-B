@@ -13,23 +13,54 @@ module.exports = {
             let { user } = context;
             let { id } = args;
             
-            //  console.log("Dezzeer---",id);
             if(!user) throw new AuthenticationError('Se requiere autenticacion');
 
             // if(!userId) throw new UserInputError('El id no existe');
 
             
-            let followingUsers  = await Follow.findAll({
+            let followingUsers = await User.findAll({
                 where: { user: id },
-                include: [{ 
-                    attributes: ['id', 'username', 'firstname', 'lastname','bio'],
-                    model: User, required: true, as: 'follow',
-                    include: [{ model: Follow, as: 'followed', required: false, where: { user: id } }]
-
-                }]
-            });
-            console.log("Dezzeer---",JSON.parse(JSON.stringify(followingUsers,null,4)));
-            return followingUsers;
+                include: [
+                  {
+                    model: Follow,
+                    as: 'followed',
+                    include: [
+                      {
+                        model: User,
+                        as: 'following',
+                        attributes: ['id', 'username', 'firstname', 'lastname', 'bio'],
+                        include: [
+                          {
+                            model: Follow,
+                            as: 'followers',
+                            where: { user: id },
+                            required: false
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              });
+              console.log("Dezzeer---", JSON.parse(JSON.stringify(followingUsers, null, 4)));
+              return followingUsers;
+              
+              
+              
+              
+              
+              
+              
+            // let followingUsers  = await Follow.findAll({
+            //     where: { user: id },
+            //     include: [{ 
+            //         attributes: ['id', 'username', 'firstname', 'lastname','bio'],
+            //         model: User, required: true, as: 'followers',
+            //         include: [{ model: Follow, as: 'followwer', required: false, where: { user: id } }] 
+            //     }]
+            // });
+            // console.log("Dezzeer---",JSON.parse(JSON.stringify(followingUsers,null,4)));
+            // return followingUsers;
 
         },
         // async followers(root, args, contex){
@@ -46,9 +77,9 @@ module.exports = {
         if(!user) throw new AuthenticationError('Se requiere autenticacion');
         
 
-        let newFollow = await Follow.create({user: user.id, followed: id})
+        let newFollow = await Follow.create({userId: user.id, followerId: id})
         
-        let followedUser = await Follow.findOne({where: { followed: id }})
+        let followedUser = await Follow.findOne({where: { followerId: id }})
         return followedUser;
         
        },
