@@ -14,7 +14,7 @@ module.exports = {
       userId: {
         type: Sequelize.UUID
       },
-      followerId: {
+      followedId: {
         type: Sequelize.UUID
       },
       createdAt: {
