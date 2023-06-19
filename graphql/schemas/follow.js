@@ -14,7 +14,7 @@ extend type Mutation {
 }
 
 type FollowResponse {
-    followedId: String!
+    # followedId: String!
     following: UserFollowing
 } 
  
