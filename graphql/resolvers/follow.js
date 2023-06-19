@@ -32,7 +32,7 @@ module.exports = {
                 
                return userRet
             })
-            console.log("Dezzeer---",JSON.parse(JSON.stringify(responseUser,null,4)));
+            // console.log("Dezzeer---",JSON.parse(JSON.stringify(responseUser,null,4)));
             //  console.log("Dezzeer---",JSON.stringify(responseUser,null,4));
             return responseUser;
 
@@ -47,14 +47,18 @@ module.exports = {
        async followUser(root, args, context){
         let { user } = context;
         let  { id }  = args;
-        //console.log("Dezzeer---",JSON.parse(JSON.stringify(user,null,4)));
+        
         if(!user) throw new AuthenticationError('Se requiere autenticacion');
         
 
         let newFollow = await Follow.create({userId: user.id, followedId: id})
         
         let followedUser = await Follow.findOne({where: { followedId: id }})
-        return followedUser;
+        console.log("Dezzeer---",JSON.parse(JSON.stringify(followedUser,null,4)));
+        return {
+            success: true,
+            msg: "Comensaste a seguir este usuario",
+        };
         
        },
 
