@@ -22,9 +22,9 @@ module.exports = {
                 include: [{ 
                     attributes: ['id', 'username', 'firstname', 'lastname'],
                     model: User, required: true, as: 'following',
-                    include: [{ 
-                        model: Follow, as: 'following', required: false, where: { userId: id } 
-                    }] 
+                    // include: [{ 
+                    //      model: Follow, as: 'following', required: false, where: { userId: id } 
+                    // }] 
                 }]
             });
              
@@ -32,7 +32,8 @@ module.exports = {
                 
                return userRet
             })
-            console.log("Dezzeer---",JSON.stringify(responseUser,null,4));
+            console.log("Dezzeer---",JSON.parse(JSON.stringify(responseUser,null,4)));
+            //  console.log("Dezzeer---",JSON.stringify(responseUser,null,4));
             return responseUser;
 
         },

@@ -15,10 +15,8 @@ extend type Mutation {
 
 type FollowResponse {
     followedId: String!
-    
-     
-     
- }
+    following: UserFollowing
+} 
  
 type unFollowResponse {
     
@@ -32,5 +30,12 @@ type GenericResponse {
         data: String,
         msg: String
     }
+
+type UserFollowing{
+    id: String!,
+    username: String,
+    firstname: String,
+    lastname: String
+}
 
 `
