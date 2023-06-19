@@ -9,12 +9,11 @@ extend type Query {
 
 
 extend type Mutation {
-    followUser(id: String!) : FollowResponse
+    followUser(id: String!) : SingleFollowResponse
     unFollowUser(id: String) : unFollowResponse
 }
 
 type FollowResponse {
-    followedId: String!
     following: UserFollowing
 } 
  
@@ -30,6 +29,11 @@ type GenericResponse {
         data: String,
         msg: String
     }
+
+type SingleFollowResponse {
+    success: Boolean,
+    msg: String
+}
 
 type UserFollowing{
     id: String!,
