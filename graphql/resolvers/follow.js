@@ -7,6 +7,42 @@ const { fromCursorHash, toCursorHash} = require('../../utils/cursors');
 
 
 module.exports = {
+    Query: {
+        //obtener usuarios que sigue un usuario  
+        async getFollowing(root, args, context){
+            let { user } = context;
+            let { id } = args;
+            
+            if(!user) throw new AuthenticationError('Se requiere autenticacion');
+
+            // if(!userId) throw new UserInputError('El id no existe');
+
+            const data  = await Follow.findAll({
+                where: { userId: id },
+                include: [{ 
+                    attributes: ['id', 'username', 'firstname', 'lastname'],
+                    model: User, required: true, as: 'following',
+                    // include: [{ 
+                    //      model: Follow, as: 'following', required: false, where: { userId: id } 
+                    // }] 
+                }]
+            });
+             
+            responseUser = data.map(userRet => {
+                
+               return userRet
+            })
+            console.log("Dezzeer---",JSON.parse(JSON.stringify(responseUser,null,4)));
+            //  console.log("Dezzeer---",JSON.stringify(responseUser,null,4));
+            return responseUser;
+
+        },
+        // async followers(root, args, contex){
+        //usuarios que me siguen
+        // }
+
+    },
+
     Mutation: {
        async followUser(root, args, context){
         let { user } = context;
@@ -15,9 +51,9 @@ module.exports = {
         if(!user) throw new AuthenticationError('Se requiere autenticacion');
         
 
-        let newFollow = await Follow.create({user: user.id, followed: id})
+        let newFollow = await Follow.create({userId: user.id, followedId: id})
         
-        let followedUser = await Follow.findOne({where: { followed: id }})
+        let followedUser = await Follow.findOne({where: { followedId: id }})
         return followedUser;
         
        },

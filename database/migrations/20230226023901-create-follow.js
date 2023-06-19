@@ -11,11 +11,11 @@ module.exports = {
         field: 'id',
         primaryKey: true
       },
-      user: {
-        type: Sequelize.STRING
+      userId: {
+        type: Sequelize.UUID
       },
-      followed: {
-        type: Sequelize.STRING
+      followedId: {
+        type: Sequelize.UUID
       },
       createdAt: {
         allowNull: false,

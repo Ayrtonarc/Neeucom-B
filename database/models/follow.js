@@ -11,15 +11,18 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Follow.belongsTo(models.User, {foreignKey: 'user', as: 'follow'});
-      Follow.belongsTo(models.User, {foreignKey: 'followed', as: 'userFollowed'});
+      Follow.belongsTo(models.User, {foreignKey: 'userId', as: 'followers'});
+      Follow.belongsTo(models.User, {foreignKey: 'followedId', as: 'following'});  //linea nueva
+      
+      
     }
   }
   Follow.init({
 
-    user: DataTypes.STRING,
+    userId: DataTypes.UUID,
 
-    followed: DataTypes.STRING,
+    followedId: DataTypes.UUID,
+    
 
     createdAt: {
       type: "TIMESTAMP",

@@ -12,8 +12,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.hasMany(models.Follow, { foreignKey: 'user', as: 'follow' });
-      User.hasMany(models.Follow, { foreignKey: 'followed', as: 'followed' });
+      User.hasMany(models.Follow, { foreignKey: 'userId', as: 'followers' });
+      User.hasMany(models.Follow, { foreignKey: 'followedId', as: 'following' });     
     }
 
     async generatePasswordHash() {
