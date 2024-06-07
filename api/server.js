@@ -2,6 +2,10 @@
 
 const express = require('express');
 const { createServer } = require('http');
+
+const path = require("path");
+const fs = require("fs");
+const https = require("https");
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
 const typeDefs = require('../graphql/schemas');
@@ -28,7 +32,11 @@ apolloServer.start().then(async() => {
 
 
 
-const server = createServer(app);
+//const server = createServer(app);
+const server = https.createServer({
+  key: fs.readFileSync(path.join("/etc/letsencrypt/live/neeucom.com/privkey.pem")),
+  cert: fs.readFileSync(path.join("/etc/letsencrypt/live/neeucom.com/fullchain.pem"))
+}, app);
 
 module.exports = server;
 
