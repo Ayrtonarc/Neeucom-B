@@ -5,12 +5,14 @@ const bcrypt = require('bcryptjs');
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
 const { EMAIL_PATTERN, USERNAME_VALIDATOR } = require('../../utils/globalconstants');
 const  {User}  = require('../../database/models');
+const { GraphQLUpload } = require('graphql-upload');
+
 
 const { Op, where } = require('sequelize');
 const { fromCursorHash, toCursorHash} = require('../../utils/cursors');
 
 module.exports = {
-
+  Upload: GraphQLUpload,
   Query: {
     async getAllUsers(root, args, context){
       let { user } = context;
@@ -92,6 +94,6 @@ module.exports = {
 
       const updatedInfo = await User.findOne({where:{ id: user.id}})
       return updatedInfo;
-    }
+    },
   },
 };
