@@ -6,6 +6,9 @@ const { AuthenticationError, UserInputError } = require('apollo-server-express')
 const { EMAIL_PATTERN, USERNAME_VALIDATOR } = require('../../utils/globalconstants');
 const  {User}  = require('../../database/models');
 const { GraphQLUpload } = require('graphql-upload');
+const path = require('path');
+const fs = require('fs');
+const { finished } = require('stream/promises'); // Importa finis
 
 
 const { Op, where } = require('sequelize');
@@ -95,5 +98,82 @@ module.exports = {
       const updatedInfo = await User.findOne({where:{ id: user.id}})
       return updatedInfo;
     },
+
+    async uploadProfilePicture(root, args, context) {
+      const { user } = context;
+      if (!user) throw new AuthenticationError('Required Auth');
+
+      const { createReadStream, filename, mimetype } = await args.file;
+
+      // Verificamos que el archivo sea una imagen
+      if (!mimetype.startsWith('image/')) {
+        throw new Error('El archivo debe ser una imagen');
+      }
+
+      // Definir la ruta del archivo
+      const uploadsDir = path.join(__dirname, 'uploads/profile_images');
+      const filePath = path.join(uploadsDir, `${user.id}_${filename}`);
+
+      // Crear el directorio si no existe
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      // Guardar la imagen en el servidor
+      const stream = createReadStream();
+      const out = fs.createWriteStream(filePath);
+      stream.pipe(out);
+      await finished(out);
+
+      // Actualizar la información del usuario con la ruta de la imagen
+      await User.update({ profilePicture: filePath }, { where: { id: user.id } });
+
+      // Obtener la información actualizada del usuario
+      const updatedUser = await User.findOne({ where: { id: user.id } });
+
+      return updatedUser;
+    }
+
+    // async uploadProfilePicture(root, { file }, context) {
+    //   const { user } = context;
+    //   if (!user) throw new AuthenticationError('Required Auth');
+
+    //   // Procesar el archivo subido
+    //   const { createReadStream, filename, mimetype } = await file;
+
+    //   // Verificamos que el archivo sea una imagen
+    //   if (!mimetype.startsWith('image/')) {
+    //     throw new Error('El archivo debe ser una imagen');
+    //   }
+
+    //   // Construir la ruta donde se guardará el archivo
+    //   const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_'); // Sanitiza el nombre del archivo
+    //   const filePath = path.join(__dirname, 'uploads/profile_images', `${user.id}_${sanitizedFilename}`);
+
+    //   // Crear el directorio si no existe
+    //   const dir = path.dirname(filePath);
+    //   if (!fs.existsSync(dir)) {
+    //     fs.mkdirSync(dir, { recursive: true });
+    //   }
+
+    //   // Guardar la imagen en el servidor
+    //   const stream = createReadStream();
+    //   const out = createWriteStream(filePath);
+
+    //   try {
+    //     stream.pipe(out);
+    //     await finished(out);
+    //   } catch (error) {
+    //     throw new Error('Error al guardar la imagen en el servidor');
+    //   }
+
+    //   // Actualizar la información del usuario con la ruta de la imagen
+    //   await User.update({ profileImage: filePath }, { where: { id: user.id } });
+
+    //   // Obtener la información actualizada del usuario
+    //   const updatedUser = await User.findOne({ where: { id: user.id } });
+
+    //   return updatedUser;
+    // },
   },
 };

@@ -25,7 +25,7 @@ extend type Query {
      lastname: String!
      username: String!
      email: String!
-     bio: String!
+     bio: String
      profilePicture: String
  }
 
