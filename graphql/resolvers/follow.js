@@ -68,7 +68,7 @@ module.exports = {
         if(!user) throw new AuthenticationError('Se requiere autenticacion');
         let { id } = args;
 
-        await Follow.destroy({ where: { followed: id }});
+        await Follow.destroy({ where: { followedId: id }});
         return {
             success: true,
             msg: "Se dejo de seguir este usuario",
