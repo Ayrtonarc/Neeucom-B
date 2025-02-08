@@ -23,6 +23,7 @@
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.20.1",
+    "sharp": "^0.33.5",
     "stream-to-buffer": "^0.1.0"
   },
   "devDependencies": {
