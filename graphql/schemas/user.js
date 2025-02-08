@@ -16,6 +16,7 @@ extend type Query {
      login(email: String!, password: String!): LoginResponse
      updateUserInfo(firstname: String!, lastname: String!, username: String! bio: String!) : User
      uploadProfilePicture(file: Upload!, userId: ID!): User
+     deleteProfilePicture(userId: ID!): User
 
  }
 

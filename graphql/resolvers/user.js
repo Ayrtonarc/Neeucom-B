@@ -9,7 +9,7 @@ const { GraphQLUpload } = require('graphql-upload');
 const path = require('path');
 const fs = require('fs');
 const { finished } = require('stream/promises'); // Importa finis
-const uploadToSpaces = require('../../services/digitalocean');
+const {uploadToSpaces, deleteFromSpaces} = require('../../services/digitalocean'); 
 const streamToBuffer = require('stream-to-buffer');
 
 
@@ -143,7 +143,40 @@ module.exports = {
       }
     
       return updatedUser;
+    },
+
+    async deleteProfilePicture(root, args, context) {
+      const { user } = context;
+      if (!user) throw new AuthenticationError('Required Auth');
+    
+      // Valor del avatar por defecto
+      const defaultAvatar = 'https://mi-cdn.com/default-avatar.webp';
+    
+      // Obtener el usuario actual desde la base de datos
+      const currentUser = await User.findOne({ where: { id: user.id } });
+      if (!currentUser) throw new Error('User not found');
+    
+      // Si el usuario tiene una foto personalizada, eliminarla de Spaces
+      if (currentUser.profilePicture && currentUser.profilePicture !== defaultAvatar) {
+        // Se asume que la URL pública tiene el formato: spacesUrl + "/" + key
+        const spacesUrl = process.env.DO_ENDPOINT;
+        // Por ejemplo, si spacesUrl es "https://neeucomdos.sfo2.digitaloceanspaces.com"
+        const key = currentUser.profilePicture.split(`${spacesUrl}/`)[1];
+        if (key) {
+          await deleteFromSpaces(key); // deleteFromSpaces ya debe estar implementada e importada
+        }
+      }
+    
+      // Actualizar la foto de perfil a la imagen por defecto en la base de datos
+      await User.update({ profilePicture: defaultAvatar }, { where: { id: user.id } });
+      
+      // Retornar el usuario actualizado
+      const updatedUser = await User.findOne({ where: { id: user.id } });
+      if (!updatedUser) throw new Error('User not found');
+      return updatedUser;
     }
+    
+      
     
   },
 };
