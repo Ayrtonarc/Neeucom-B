@@ -109,39 +109,42 @@ module.exports = {
     async uploadProfilePicture(root, args, context) {
       const { user } = context;
       if (!user) throw new AuthenticationError('Required Auth');
-  
+    
       const { createReadStream, filename, mimetype } = await args.file;
-  
+    
       if (!mimetype.startsWith('image/')) {
-          throw new Error('El archivo debe ser una imagen');
+        throw new Error('El archivo debe ser una imagen');
       }
-  
+    
       const stream = createReadStream();
       const fileBuffer = await new Promise((resolve, reject) => {
-          streamToBuffer(stream, (err, buffer) => {
-              if (err) return reject(err);
-              resolve(buffer);
-          });
+        streamToBuffer(stream, (err, buffer) => {
+          if (err) return reject(err);
+          resolve(buffer);
+        });
       });
-  
+    
+      // Validación del tamaño máximo (5 MB)
+      const maxFileSize = 5 * 1024 * 1024; // 5 MB en bytes
+      if (fileBuffer.length > maxFileSize) {
+        throw new Error('El tamaño del archivo supera el límite permitido de 5 MB');
+      }
+    
       const key = `user_${user.id}/profile_picture_${Date.now()}_${filename}`;
       const publicUrl = await uploadToSpaces(key, fileBuffer, mimetype);
-  
+    
       // Actualiza la URL en la base de datos
       await User.update({ profilePicture: publicUrl }, { where: { id: user.id } });
-  
-      // Devuelve solo la URL o el objeto simple del usuario actualizado
+    
+      // Devuelve el usuario actualizado (o solo la URL, según necesites)
       const updatedUser = await User.findOne({ where: { id: user.id } });
-
-      //console.log("z-------------",updatedUser);
-      
-      return {
-          // id: updatedUser.id,
-          // profilePicture: updatedUser.profilePicture
-          
-          updatedUser
-      };
-  }
+      if (!updatedUser) {
+        throw new Error('User not found');
+      }
+    
+      return updatedUser;
+    }
+    
 
     // async uploadProfilePicture(root, args, context) {
     //   const { user } = context;
