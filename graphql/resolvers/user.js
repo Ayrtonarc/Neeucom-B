@@ -130,7 +130,9 @@ module.exports = {
         throw new Error('El tamaño del archivo supera el límite permitido de 5 MB');
       }
     
-      const key = `user_${user.id}/profile_picture_${Date.now()}_${filename}`;
+      //const key = `user_${user.id}/profile_picture_${Date.now()}_${filename}`;
+      const key = `userProfilePictures/user_${user.id}/profile_picture_${Date.now()}_${filename}`;
+
       const publicUrl = await uploadToSpaces(key, fileBuffer, mimetype);
     
       // Actualiza la URL en la base de datos
