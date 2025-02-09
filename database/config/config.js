@@ -9,7 +9,7 @@ module.exports = {
     database: 'newcomdb',
     host: '127.0.0.1',
     dialect: 'postgres',
-    use_env_variable: 'DEV_DATABASE_URL',
+    url: process.env.DATABASE_URL
   },
   test: {
     username: 'root',
@@ -19,7 +19,7 @@ module.exports = {
     dialect: 'postgres',
     host: '127.0.0.1',
     dialect: 'postgres',
-    use_env_variable: 'TEST_DATABASE_URL',
+    url: process.env.DATABASE_URL,
   },
   production: {
     username: 'root',
@@ -29,7 +29,7 @@ module.exports = {
     dialect: 'postgres',
     host: '127.0.0.1',
     dialect: 'postgres',
-    use_env_variable: 'DATABASE_URL',
+    url: process.env.DATABASE_URL,
   },
 };
 

@@ -150,7 +150,7 @@ module.exports = {
       if (!user) throw new AuthenticationError('Required Auth');
     
       // Valor del avatar por defecto
-      const defaultAvatar = 'https://mi-cdn.com/default-avatar.webp';
+      const defaultAvatar = 'https://neeucomdos.sfo2.cdn.digitaloceanspaces.com/default-avatar.webp';
     
       // Obtener el usuario actual desde la base de datos
       const currentUser = await User.findOne({ where: { id: user.id } });
