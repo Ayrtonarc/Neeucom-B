@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
     bio: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
+    profilePicture: {
+      type: DataTypes.STRING,
+      defaultValue: 'https://neeucomdos.sfo2.cdn.digitaloceanspaces.com/default-avatar.webp',
+    }
   }, {
     sequelize,
     modelName: 'User',

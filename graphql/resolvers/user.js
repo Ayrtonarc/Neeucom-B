@@ -5,11 +5,21 @@ const bcrypt = require('bcryptjs');
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
 const { EMAIL_PATTERN, USERNAME_VALIDATOR } = require('../../utils/globalconstants');
 const  {User}  = require('../../database/models');
+const { GraphQLUpload } = require('graphql-upload');
+const path = require('path');
+const fs = require('fs');
+const { finished } = require('stream/promises'); // Importa finis
+const {uploadToSpaces, deleteFromSpaces} = require('../../services/digitalocean'); 
+const streamToBuffer = require('stream-to-buffer');
+
 
 const { Op, where } = require('sequelize');
 const { fromCursorHash, toCursorHash} = require('../../utils/cursors');
+const { log } = require('console');
 
 module.exports = {
+  Upload: GraphQLUpload, //Soporte para archivos
+
 
   Query: {
     async getAllUsers(root, args, context){
@@ -92,6 +102,83 @@ module.exports = {
 
       const updatedInfo = await User.findOne({where:{ id: user.id}})
       return updatedInfo;
+    },
+
+
+
+    async uploadProfilePicture(root, args, context) {
+      const { user } = context;
+      if (!user) throw new AuthenticationError('Required Auth');
+    
+      const { createReadStream, filename, mimetype } = await args.file;
+    
+      if (!mimetype.startsWith('image/')) {
+        throw new Error('El archivo debe ser una imagen');
+      }
+    
+      const stream = createReadStream();
+      const fileBuffer = await new Promise((resolve, reject) => {
+        streamToBuffer(stream, (err, buffer) => {
+          if (err) return reject(err);
+          resolve(buffer);
+        });
+      });
+    
+      // Validación del tamaño máximo (5 MB)
+      const maxFileSize = 5 * 1024 * 1024; // 5 MB en bytes
+      if (fileBuffer.length > maxFileSize) {
+        throw new Error('El tamaño del archivo supera el límite permitido de 5 MB');
+      }
+    
+      //const key = `user_${user.id}/profile_picture_${Date.now()}_${filename}`;
+      const key = `userProfilePictures/user_${user.id}/profile_picture_${Date.now()}_${filename}`;
+
+      const publicUrl = await uploadToSpaces(key, fileBuffer, mimetype);
+    
+      // Actualiza la URL en la base de datos
+      await User.update({ profilePicture: publicUrl }, { where: { id: user.id } });
+    
+      // Devuelve el usuario actualizado (o solo la URL, según necesites)
+      const updatedUser = await User.findOne({ where: { id: user.id } });
+      if (!updatedUser) {
+        throw new Error('User not found');
+      }
+    
+      return updatedUser;
+    },
+
+    async deleteProfilePicture(root, args, context) {
+      const { user } = context;
+      if (!user) throw new AuthenticationError('Required Auth');
+    
+      // Valor del avatar por defecto
+      const defaultAvatar = 'https://neeucomdos.sfo2.cdn.digitaloceanspaces.com/default-avatar.webp';
+    
+      // Obtener el usuario actual desde la base de datos
+      const currentUser = await User.findOne({ where: { id: user.id } });
+      if (!currentUser) throw new Error('User not found');
+    
+      // Si el usuario tiene una foto personalizada, eliminarla de Spaces
+      if (currentUser.profilePicture && currentUser.profilePicture !== defaultAvatar) {
+        // Se asume que la URL pública tiene el formato: spacesUrl + "/" + key
+        const spacesUrl = process.env.DO_ENDPOINT;
+        // Por ejemplo, si spacesUrl es "https://neeucomdos.sfo2.digitaloceanspaces.com"
+        const key = currentUser.profilePicture.split(`${spacesUrl}/`)[1];
+        if (key) {
+          await deleteFromSpaces(key); // deleteFromSpaces ya debe estar implementada e importada
+        }
+      }
+    
+      // Actualizar la foto de perfil a la imagen por defecto en la base de datos
+      await User.update({ profilePicture: defaultAvatar }, { where: { id: user.id } });
+      
+      // Retornar el usuario actualizado
+      const updatedUser = await User.findOne({ where: { id: user.id } });
+      if (!updatedUser) throw new Error('User not found');
+      return updatedUser;
     }
+    
+      
+    
   },
 };
