@@ -13,7 +13,9 @@ function signRequest(method, path, contentType) {
   const date = new Date().toUTCString();
   // Se incluye el header x-amz-acl en el string a firmar
   const canonicalAmzHeaders = "x-amz-acl:public-read\n";
-  const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${bucketName}/${path}`;
+  // const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${bucketName}/${path}`;
+  const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${path}`;
+
   
   console.log('🛠️ String to sign:', stringToSign);
 
