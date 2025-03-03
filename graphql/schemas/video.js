@@ -1,5 +1,5 @@
 // graphql/schema/video.js
-const { gql } = require('apollo-server');
+const { gql } = require('apollo-server-express');
 
 module.exports = gql`
     scalar Upload
@@ -23,6 +23,17 @@ module.exports = gql`
         url: String!
         createdAt: String!
         updatedAt: String!
+    }
+
+    type GetAllVideosV1 {
+        edges: [Video]
+        pageInfo: PageInfo!
+    }
+
+    type PageInfo {
+         hasNextPage: Boolean!
+        startCursor: String!
+        endCursor: String!
     }
 
 `;

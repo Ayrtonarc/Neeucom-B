@@ -4,6 +4,7 @@ const { gql } = require('apollo-server-express');
 const userType = require('./user');
 const messageType = require('./message');
 const followType = require('./follow')
+const videoType = require('./video')
 
 const rootType = gql`
  type Query {
@@ -19,5 +20,6 @@ module.exports = [
     rootType,
     userType,
     messageType,
-    followType
+    followType,
+    videoType
     ];
