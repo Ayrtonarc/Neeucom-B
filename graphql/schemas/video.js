@@ -10,17 +10,20 @@ module.exports = gql`
     }
     
     extend type Mutation {
-        addVideo(title: String!, description: String!, videoUrl: String!, thumbnailUrl: String!, userId: ID!): Video
+        addVideo(title: String!, description: String!, file: Upload!, userId: ID!): Video
         updateVideo(id: String!, title: String, description: String, videoUrl: String, thumbnailUrl: String): Video
         deleteVideo(id: String!): Video
         uploadVideo(file: Upload!, userId: ID!): Video
         deleteVideoFile(videoId: ID!): Video
     }
+    
     type Video {
         id: ID!
+        userId: ID!
         title: String!
         description: String
-        url: String!
+        videoUrl: String!
+        thumbnailUrl: String!
         createdAt: String!
         updatedAt: String!
     }
@@ -31,10 +34,9 @@ module.exports = gql`
     }
 
     type PageInfo {
-         hasNextPage: Boolean!
+        hasNextPage: Boolean!
         startCursor: String!
         endCursor: String!
     }
-
 `;
 
