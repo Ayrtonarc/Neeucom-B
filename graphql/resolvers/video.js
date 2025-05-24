@@ -8,6 +8,83 @@ const { Mutation } = require('./follow');
 const { createWriteStream } = require('fs');
 const path = require('path');
 const { uploadVideoToSpaces } = require('../../services/digitaloceanvideo');
+const fs = require('fs');
+
+const UPLOADS_DIR = path.join(__dirname, '../../uploads/videos');
+
+// Ensure uploads directory exists
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+function generateUniqueFilename() {
+    const timestamp = Date.now(); // Marca de tiempo actual
+    return `${timestamp}.mp4`; // Solo el timestamp con la extensión .mp4
+}
+
+async function validateVideoInput(title, description, file) {
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+        throw new UserInputError('El título es obligatorio y debe ser una cadena no vacía');
+    }
+
+    if (!description || typeof description !== 'string' || description.trim() === '') {
+        throw new UserInputError('La descripción es obligatoria y debe ser una cadena no vacía');
+    }
+
+    if (!file || typeof file !== 'object') {
+        throw new UserInputError('El archivo es obligatorio y debe ser un objeto válido');
+    }
+
+    const { filename, mimetype, createReadStream } = await file;
+    if (!filename || !mimetype || !createReadStream) {
+        throw new UserInputError('El archivo no es válido');
+    }
+
+    const allowedMimeTypes = ['video/mp4', 'video/avi', 'video/mkv'];
+    if (!allowedMimeTypes.includes(mimetype)) {
+        throw new UserInputError('El tipo de archivo no es válido. Solo se permiten videos.');
+    }
+
+    return { filename, mimetype, createReadStream };
+}
+
+async function saveFileToServer(createReadStream, filePath) {
+    await new Promise((resolve, reject) => {
+        const stream = createReadStream();
+        const out = createWriteStream(filePath);
+        stream.pipe(out);
+
+        out.on('finish', () => {
+            console.log(`✅ Archivo guardado físicamente en el servidor: ${filePath}`);
+            resolve();
+        });
+
+        out.on('error', (err) => {
+            console.error(`❌ Error al guardar el archivo en el servidor: ${filePath}`, err);
+            reject(err);
+        });
+    });
+}
+
+async function uploadFileToSpaces(uniqueFilename, filePath, mimetype) {
+    const fileBuffer = fs.readFileSync(filePath);
+    let videoUrl;
+    try {
+        videoUrl = await uploadVideoToSpaces(uniqueFilename, fileBuffer, mimetype);
+    } catch (error) {
+        console.error('Error al subir el archivo a Spaces:', error);
+        fs.unlinkSync(filePath); // Eliminar archivo local
+        throw new Error('Error al subir el archivo a DigitalOcean Spaces');
+    }
+
+    fs.unlink(filePath, (err) => {
+        if (err) {
+            console.error(`Error al eliminar el archivo local: ${filePath}`, err);
+        } else {
+            console.log(`Archivo local eliminado: ${filePath}`);
+        }
+    });
+
+    return videoUrl;
+}
 
 module.exports = {
     Upload: GraphQLUpload, // Soporte para archivos
@@ -24,63 +101,25 @@ module.exports = {
         async addVideo(root, args, context) {
             const { title, description, file } = args;
 
-            // Logs de depuración
-            console.log('addVideo llamado con:');
-            console.log('title:', title, ' (tipo:', typeof title, ')');
-            console.log('description:', description, ' (tipo:', typeof description, ')');
-            console.log('file:', file, ' (tipo:', typeof file, ')');
+            // Validar entrada
+            await validateVideoInput(title, description, file);
 
-            // Validar que el usuario esté autenticado
-            if (!context.user) {
-                throw new AuthenticationError('Debes estar autenticado para agregar un video');
-            }
+            const { mimetype, createReadStream } = await file;
 
-            // Validar los datos de entrada
-            if (!title || !description || !file) {
-                console.log('Validación fallida: algún campo está ausente', { title: !!title, description: !!description, file: !!file });
-                throw new UserInputError('Todos los campos son obligatorios');
-            }
+            // Generar un nombre único basado en timestamp
+            const uniqueFilename = generateUniqueFilename();
+            const filePath = path.join(UPLOADS_DIR, uniqueFilename);
 
-            // Verificar que el archivo no sea undefined
-            if (!file) {
-                throw new UserInputError('El archivo es obligatorio');
-            }
+            console.log(`[addVideo] Usuario autenticado: ${context.user.id}`);
+            console.log(`[addVideo] Subiendo archivo a Spaces con nombre: ${uniqueFilename}`);
 
-            const { filename, mimetype, createReadStream } = await file;
-            console.log('Archivo recibido:', { filename, mimetype, createReadStream: Boolean(createReadStream) });
+            // Guardar archivo en el servidor
+            await saveFileToServer(createReadStream, filePath);
 
-            // Verificar que las propiedades del archivo no sean undefined
-            if (!filename || !mimetype || !createReadStream) {
-                throw new UserInputError('El archivo no es válido');
-            }
+            // Subir archivo a Spaces
+            const videoUrl = await uploadFileToSpaces(uniqueFilename, filePath, mimetype);
 
-            // Generar un nombre único para el archivo
-            const uniqueFilename = `${Date.now()}-${filename}`;
-
-            // Definir la ruta donde se guardará el archivo
-            const filePath = path.join(__dirname, '../../uploads/videos', uniqueFilename);
-
-            // Guardar el archivo en el servidor
-            await new Promise((resolve, reject) => {
-                const stream = createReadStream();
-                const out = createWriteStream(filePath);
-                stream.pipe(out);
-                out.on('finish', resolve);
-                out.on('error', reject);
-            });
-
-            // Subir el archivo a DigitalOcean Spaces
-            const fileBuffer = await new Promise((resolve, reject) => {
-                const chunks = [];
-                const stream = createReadStream();
-                stream.on('data', chunk => chunks.push(chunk));
-                stream.on('end', () => resolve(Buffer.concat(chunks)));
-                stream.on('error', reject);
-            });
-
-            const videoUrl = await uploadVideoToSpaces(uniqueFilename, fileBuffer, mimetype);
-
-            // Guardar la información del video en la base de datos
+            // Guardar información en la base de datos
             const newVideo = await context.db.Video.create({
                 title,
                 description,

@@ -4,8 +4,8 @@ const axios = require('axios');
 const crypto = require('crypto');
 require('dotenv').config();
 
-// Endpoint de estilo virtual-host, e.g. "https://neeucomdos.sfo2.digitaloceanspaces.com"
-const spacesUrl = process.env.DO_ENDPOINT;
+const spacesUrl = process.env.DO_ENDPOINT; // Endpoint de estilo virtual-host
+const bucketName = process.env.DO_SPACE_NAME;
 
 /**
  * Retorna la URL pública de un archivo en Spaces a partir de la key.
@@ -21,8 +21,8 @@ function getPublicUrl(key) {
 function signRequest(method, path, contentType) {
   const date = new Date().toUTCString();
   const canonicalAmzHeaders = 'x-amz-acl:public-read\n';
-  // En endpoint virtual-host, la ruta canónica es /{path}, sin {bucketName}.
-  const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${path}`;
+  const cleanPath = encodeURIComponent(path); // Codifica espacios y caracteres especiales
+  const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${cleanPath}`;
 
   console.log('🛠️ String to sign (PUT):', stringToSign);
 
@@ -36,19 +36,18 @@ function signRequest(method, path, contentType) {
 }
 
 /**
- * Sube un archivo (por ejemplo, un video) a DigitalOcean Spaces.
- * @param {string} key - La clave única donde se almacenará el archivo (e.g. "userVideos/user_123/video_123.mp4")
+ * Sube un archivo de video a DigitalOcean Spaces.
+ * @param {string} key - La clave única donde se almacenará el archivo (e.g. "videos/video_123.mp4")
  * @param {Buffer} fileBuffer - El contenido del archivo en un Buffer
  * @param {string} contentType - El tipo MIME (e.g. "video/mp4")
  */
 async function uploadVideoToSpaces(key, fileBuffer, contentType) {
-  // Asegura que la key no comience con "/"
-  const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+  const cleanKey = encodeURIComponent(key.startsWith('/') ? key.slice(1) : key);
   const { date, signature } = signRequest('PUT', cleanKey, contentType);
 
-  const url = `${spacesUrl}/${key}`;
+  const url = `${spacesUrl}/${cleanKey}`;
   console.log('🚀 Iniciando subida del archivo...');
-  console.log(`🔑 Key del archivo: ${key}`);
+  console.log(`🔑 Key del archivo: ${cleanKey}`);
   console.log('MIME type detectado:', contentType);
 
   const headers = {
@@ -64,7 +63,7 @@ async function uploadVideoToSpaces(key, fileBuffer, contentType) {
       throw new Error(`Error al subir el archivo. Status: ${response.status}, Data: ${response.data}`);
     }
     // Retorna la URL pública del archivo
-    return getPublicUrl(key);
+    return getPublicUrl(cleanKey);
   } catch (error) {
     if (error.response) {
       console.error(`❌ Error en la respuesta de Spaces: ${error.response.status} - ${error.response.data}`);
@@ -95,11 +94,11 @@ function signRequestForDelete(method, path) {
 }
 
 /**
- * Elimina un archivo (por ejemplo, un video) de DigitalOcean Spaces.
+ * Elimina un archivo de video de DigitalOcean Spaces.
  * @param {string} key - La clave única donde se almacenó el archivo
  */
 async function deleteVideoFromSpaces(key) {
-  const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+  const cleanKey = encodeURIComponent(key.startsWith('/') ? key.slice(1) : key);
   const { date, signature } = signRequestForDelete('DELETE', cleanKey);
 
   const url = `${spacesUrl}/${cleanKey}`;
