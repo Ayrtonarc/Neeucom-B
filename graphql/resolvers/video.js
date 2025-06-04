@@ -106,18 +106,21 @@ module.exports = {
 
             const { mimetype, createReadStream } = await file;
 
-            // Generar un nombre único basado en timestamp
+            // Guardar en subcarpeta userVideoFeed
             const uniqueFilename = generateUniqueFilename();
-            const filePath = path.join(UPLOADS_DIR, uniqueFilename);
+            const filePath = path.join(UPLOADS_DIR, 'userVideoFeed', uniqueFilename);
+
+            // Asegura que la subcarpeta exista
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
             console.log(`[addVideo] Usuario autenticado: ${context.user.id}`);
-            console.log(`[addVideo] Subiendo archivo a Spaces con nombre: ${uniqueFilename}`);
+            console.log(`[addVideo] Subiendo archivo a Spaces con nombre: userVideoFeed/${uniqueFilename}`);
 
             // Guardar archivo en el servidor
             await saveFileToServer(createReadStream, filePath);
 
             // Subir archivo a Spaces
-            const videoUrl = await uploadFileToSpaces(uniqueFilename, filePath, mimetype);
+            const videoUrl = await uploadFileToSpaces(`userVideoFeed/${uniqueFilename}`, filePath, mimetype);
 
             // Guardar información en la base de datos
             const newVideo = await context.db.Video.create({
