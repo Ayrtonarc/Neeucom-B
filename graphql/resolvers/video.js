@@ -120,18 +120,10 @@ module.exports = {
             await saveFileToServer(createReadStream, filePath);
 
             // Subir archivo a Spaces
-            const videoUrl = await uploadFileToSpaces(`userVideoFeed/${uniqueFilename}`, filePath, mimetype);
+            await uploadFileToSpaces(`userVideoFeed/${uniqueFilename}`, filePath, mimetype);
 
-            // Guardar información en la base de datos
-            const newVideo = await context.db.Video.create({
-                title,
-                description,
-                filePath: videoUrl,
-                mimetype,
-                userId: context.user.id,
-            });
-
-            return newVideo;
+            // No guardamos en la base de datos ni devolvemos el objeto Video
+            return { message: 'El video se ha subido correctamente.' };
         },
         async updateVideo(root, args, context) {
             // Implementar lógica para actualizar un video

@@ -11,12 +11,10 @@ function getPublicUrl(key) {
 
 function signRequest(method, path, contentType) {
   const date = new Date().toUTCString();
-  // Se incluye el header x-amz-acl en el string a firmar
   const canonicalAmzHeaders = "x-amz-acl:public-read\n";
-  // const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${bucketName}/${path}`;
-  const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}/${path}`;
-
-  
+  // El recurso debe ser solo /key para endpoint virtual-hosted
+  const canonicalResource = `/${path}`;
+  const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalAmzHeaders}${canonicalResource}`;
   console.log('🛠️ String to sign:', stringToSign);
 
   const signature = crypto
@@ -33,16 +31,17 @@ async function uploadToSpaces(key, fileBuffer, contentType) {
   const cleanKey = key.startsWith('/') ? key.slice(1) : key;
 
   const { date, signature } = signRequest('PUT', cleanKey, contentType);
-  const url = `${spacesUrl}/${key}`;  // Asumiendo que antes funcionaba así
+  // URL virtual-hosted: bucket como subdominio
+  const url = `https://${bucketName}.sfo2.digitaloceanspaces.com/${cleanKey}`;
   console.log('🚀 Iniciando subida del archivo...');
-  console.log(`🔑 Key del archivo: ${key}`);
+  console.log(`🔑 Key del archivo: ${cleanKey}`);
   console.log('MIME type detectado:', contentType);
   
   const headers = {
     'Content-Type': contentType,
     'Date': date,
     'Authorization': `AWS ${process.env.DO_ACCESS_KEY_ID}:${signature}`,
-    'x-amz-acl': 'public-read',  // Se mantiene este header para que el archivo sea público
+    'x-amz-acl': 'public-read',
   };
 
   try {
@@ -52,7 +51,7 @@ async function uploadToSpaces(key, fileBuffer, contentType) {
       throw new Error(`Error al subir el archivo. Status: ${response.status}, Data: ${response.data}`);
     }
 
-    return getPublicUrl(key);
+    return getPublicUrl(cleanKey);
   } catch (error) {
     if (error.response) {
       console.error(`❌ Error en la respuesta de Spaces: ${error.response.status} - ${error.response.data}`);

@@ -10,7 +10,7 @@ module.exports = gql`
     }
     
     extend type Mutation {
-        addVideo(title: String!, description: String!, file: Upload!, userId: ID!): Video
+        addVideo(title: String!, description: String!, file: Upload!, userId: ID!): AddVideoResponse
         updateVideo(id: String!, title: String, description: String, videoUrl: String, thumbnailUrl: String): Video
         deleteVideo(id: String!): Video
         uploadVideo(file: Upload!, userId: ID!): Video
@@ -26,6 +26,10 @@ module.exports = gql`
         thumbnailUrl: String!
         createdAt: String!
         updatedAt: String!
+    }
+
+    type AddVideoResponse {
+        message: String!
     }
 
     type GetAllVideosV1 {
