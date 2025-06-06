@@ -10,7 +10,7 @@ module.exports = gql`
     }
     
     extend type Mutation {
-        addVideo(title: String!, description: String!, file: Upload!): AddVideoResponse
+        addVideo(title: String!, description: String!, file: Upload!): Video
         updateVideo(id: String!, title: String, description: String, videoUrl: String, thumbnailUrl: String): Video
         deleteVideo(id: String!): Video
         uploadVideo(file: Upload!, userId: ID!): Video
@@ -23,7 +23,8 @@ module.exports = gql`
         title: String!
         description: String
         videoUrl: String!
-        thumbnailUrl: String!
+        thumbnailUrl: String
+        views: String
         createdAt: String!
         updatedAt: String!
     }

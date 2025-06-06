@@ -113,7 +113,7 @@ module.exports = {
             const videoUrl = await uploadFileToSpaces(`userVideoFeed/${uniqueFilename}`, filePath, mimetype);
 
             // Guardar en la base de datos
-            await Video.create({
+           const newVideo = await Video.create({
                 title,
                 description,
                 userId: user.id,
@@ -121,7 +121,7 @@ module.exports = {
                 thumbnailUrl: '',
             });
 
-            return { message: 'El video se ha subido correctamente.' };
+            return newVideo;
         },
         async updateVideo(root, args, context) {
             // Implementar lógica para actualizar un video
