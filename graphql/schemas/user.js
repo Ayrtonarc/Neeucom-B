@@ -7,7 +7,7 @@ module.exports = gql`
 
 
 extend type Query {
-    getAllUsers,(cursor: String, limit: Int!): GetAllUsersV1
+    getAllUsers(cursor: String, limit: Int!): GetAllUsersV1
     getProfile(id: String!) : User
 }
 
