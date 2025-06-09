@@ -7,12 +7,13 @@ module.exports = gql`
     extend type Query {
         getAllVideos(cursor: String, limit: Int!): GetAllVideosV1
         getVideoById(id: String!): Video
+        getAllMyVideos(cursor: String, limit: Int!): GetAllVideosV1
     }
     
     extend type Mutation {
         addVideo(title: String!, description: String!, file: Upload!): Video
-        updateVideo(id: String!, title: String, description: String, videoUrl: String, thumbnailUrl: String): Video
-        deleteVideo(id: String!): Video
+        updateVideo(id: String!, title: String, description: String, thumbnailUrl: String): Video
+        deleteVideo(id: String!): DeleteVideoResponse
         uploadVideo(file: Upload!, userId: ID!): Video
         deleteVideoFile(videoId: ID!): Video
     }
@@ -32,6 +33,9 @@ module.exports = gql`
     type AddVideoResponse {
         message: String!
     }
+    type DeleteVideoResponse {
+    message: String!
+}
 
     type GetAllVideosV1 {
         edges: [Video]

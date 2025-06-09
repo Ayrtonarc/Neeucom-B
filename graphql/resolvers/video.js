@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const { uploadVideoToSpaces } = require('../../services/digitaloceanvideo');
 const { createWriteStream } = require('fs');
+const { fromCursorHash, toCursorHash } = require('../../utils/cursors');
 
 const UPLOADS_DIR = path.join(__dirname, '../../uploads/videos');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -77,10 +78,86 @@ module.exports = {
     Upload: GraphQLUpload,
     Query: {
         async getAllVideos(root, args, context) {
-            // Implementar lógica para obtener todos los videos
+            // Paginación por cursor
+            // limit: cuántos videos traer por página
+            // cursor: base64 de createdAt del último video de la página anterior
+            const { cursor, limit = 20 } = args || {};
+            let where = {};
+            if (cursor) {
+                // Decodifica el cursor y filtra los videos creados antes de esa fecha
+                const createdAtCursor = new Date(fromCursorHash(cursor));
+                if (!isNaN(createdAtCursor)) {
+                    where.createdAt = { $lt: createdAtCursor };
+                }
+            }
+            // Trae limit + 1 videos para saber si hay siguiente página
+            const videos = await Video.findAll({
+                where,
+                order: [['createdAt', 'DESC']],
+                limit: limit + 1,
+            });
+            // Si hay más de limit videos, hay siguiente página
+            const hasNextPage = videos.length > limit;
+            // edges: videos a retornar (limit)
+            const edges = hasNextPage ? videos.slice(0, -1) : videos;
+            // pageInfo: información de paginación (cursors)
+            return {
+                edges,
+                pageInfo: {
+                    hasNextPage,
+                    startCursor: edges.length > 0 ? toCursorHash(edges[0].createdAt.toISOString()) : '',
+                    endCursor: edges.length > 0 ? toCursorHash(edges[edges.length - 1].createdAt.toISOString()) : '',
+                },
+            };
         },
         async getVideoById(root, args, context) {
-            // Implementar lógica para obtener un video por ID
+            const { user } = context;
+            if (!user || !user.id) {
+                throw new AuthenticationError('Se requiere autenticación para ver el video');
+            }
+            const { id } = args;
+            const video = await Video.findByPk(id);
+            if (!video) {
+                throw new UserInputError('Video no encontrado');
+            }
+            return video;
+        },
+        async getAllMyVideos(root, args, context) {
+            const { user } = context;
+            if (!user || !user.id) {
+                throw new AuthenticationError('Se requiere autenticación para ver tus videos');
+            }
+            // Paginación por cursor para videos del usuario autenticado
+            // limit: cuántos videos traer por página
+            // cursor: base64 de createdAt del último video de la página anterior
+            const { cursor, limit = 20 } = args || {};
+            let where = { userId: user.id };
+            if (cursor) {
+                // Decodifica el cursor y filtra los videos creados antes de esa fecha
+                const createdAtCursor = new Date(fromCursorHash(cursor));
+                if (!isNaN(createdAtCursor)) {
+                    where.createdAt = { $lt: createdAtCursor };
+                }
+            }
+            // Trae limit + 1 videos para saber si hay siguiente página
+            const videos = await Video.findAll({
+                where,
+                order: [['createdAt', 'DESC']],
+                limit: limit + 1,
+            });
+            // Si hay más de limit videos, hay siguiente página
+            const hasNextPage = videos.length > limit;
+            // edges: videos a retornar (limit)
+            const edges = hasNextPage ? videos.slice(0, -1) : videos;
+            // pageInfo: información de paginación (cursors)
+            return {
+                edges,
+                pageInfo: {
+                    hasNextPage,
+                    startCursor: edges.length > 0 ? toCursorHash(edges[0].createdAt.toISOString()) : '',
+                    endCursor: edges.length > 0 ? toCursorHash(edges[edges.length - 1].createdAt.toISOString()) : '',
+                },
+            };
         },
     },
     Mutation: {
@@ -124,16 +201,50 @@ module.exports = {
             return newVideo;
         },
         async updateVideo(root, args, context) {
-            // Implementar lógica para actualizar un video
+            const { user } = context;
+            if (!user || !user.id) {
+                throw new AuthenticationError('Se requiere autenticación para actualizar un video');
+            }
+            const { id, title, description, thumbnailUrl } = args;
+            // Buscar el video y asegurarse que pertenece al usuario autenticado
+            const video = await Video.findOne({ where: { id, userId: user.id } });
+            if (!video) {
+                throw new UserInputError('Video no encontrado o no tienes permisos para actualizarlo');
+            }
+            // Solo se pueden actualizar title, description y thumbnailUrl
+            if (title !== undefined) video.title = title;
+            if (description !== undefined) video.description = description;
+            if (thumbnailUrl !== undefined) video.thumbnailUrl = thumbnailUrl;
+            await video.save();
+            return video;
         },
         async deleteVideo(root, args, context) {
-            // Implementar lógica para eliminar un video
+            const { user } = context;
+            if (!user || !user.id) {
+                throw new AuthenticationError('Se requiere autenticación para eliminar un video');
+            }
+            const { id } = args;
+            // Buscar el video y asegurarse que pertenece al usuario autenticado
+            const video = await Video.findOne({ where: { id, userId: user.id } });
+            if (!video) {
+                throw new UserInputError('Video no encontrado o no tienes permisos para eliminarlo');
+            }
+            // Eliminar el archivo de Spaces si existe videoUrl
+            if (video.videoUrl) {
+                try {
+                    const url = new URL(video.videoUrl);
+                    const key = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
+                    const { deleteVideoFromSpaces } = require('../../services/digitaloceanvideo');
+                    await deleteVideoFromSpaces(key);
+                } catch (err) {
+                    console.error('Error eliminando archivo en Spaces:', err);
+                    // Puedes decidir si lanzar error o continuar
+                }
+            }
+            await video.destroy();
+            return { message: 'Video eliminado' }
         },
-        async uploadVideo(root, args, context) {
-            // Implementar lógica para subir un video
-        },
-        async deleteVideoFile(root, args, context) {
-            // Implementar lógica para eliminar un archivo de video
-        },
+        
+    
     }
 };
