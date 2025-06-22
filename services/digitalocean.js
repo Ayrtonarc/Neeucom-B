@@ -69,9 +69,25 @@ async function deleteProfilePictureFromSpaces(key) {
     'Date': date,
     'Authorization': `AWS ${process.env.DO_ACCESS_KEY_ID}:${signature}`,
   };
-  const response = await axios.delete(url, { headers });
-  if (response.status !== 204 && response.status !== 200) {
-    throw new Error(`Error al eliminar la foto de perfil. Status: ${response.status}, Data: ${response.data}`);
+  // LOGS para depuración
+  console.log('Intentando borrar en Spaces:');
+  console.log('  URL:', url);
+  console.log('  Key:', cleanKey);
+  console.log('  Headers:', headers);
+  console.log('  StringToSign:', stringToSign);
+  try {
+    const response = await axios.delete(url, { headers });
+    console.log('  Respuesta status:', response.status);
+    if (response.status !== 204 && response.status !== 200) {
+      throw new Error(`Error al eliminar la foto de perfil. Status: ${response.status}, Data: ${response.data}`);
+    }
+  } catch (err) {
+    if (err.response && err.response.status === 404) {
+      console.log('  Archivo no existe en Spaces (404).');
+      return;
+    }
+    console.error('  Error al borrar en Spaces:', err.response?.data || err.message || err);
+    throw err;
   }
 }
 
