@@ -5,6 +5,7 @@ const userType = require('./user');
 const messageType = require('./message');
 const followType = require('./follow')
 const videoType = require('./video')
+const commentType = require('./comment');
 
 const rootType = gql`
  type Query {
@@ -21,5 +22,6 @@ module.exports = [
     userType,
     messageType,
     followType,
-    videoType
+    videoType,
+    commentType
     ];
