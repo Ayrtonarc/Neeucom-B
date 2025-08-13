@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Follow, { foreignKey: 'userId', as: 'followers' });
       User.hasMany(models.Follow, { foreignKey: 'followedId', as: 'following' });
       User.hasMany(models.Like, { foreignKey: 'userId', as: 'likes' });
+      User.hasMany(models.Message, { foreignKey: 'senderId', as: 'sentMessages' });
+      User.hasMany(models.Message, { foreignKey: 'recipientId', as: 'receivedMessages' });
     }
 
     async generatePasswordHash() {
