@@ -7,9 +7,14 @@ const cors = require('cors');
 const typeDefs = require('../graphql/schemas');
 const resolvers = require('../graphql/resolvers');
 const context = require('../graphql/context');
+const { graphqlUploadExpress } = require('graphql-upload');
+require('dotenv').config
+
 const app = express();
 
+
 app.use(cors());
+app.use(graphqlUploadExpress());
 
 const apolloServer = new ApolloServer({
   typeDefs,

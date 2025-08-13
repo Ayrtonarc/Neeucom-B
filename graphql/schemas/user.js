@@ -3,11 +3,11 @@
 const { gql } = require('apollo-server-express');
 
 module.exports = gql`
-
+  scalar Upload
 
 
 extend type Query {
-    getAllUsers,(cursor: String, limit: Int!): GetAllUsersV1
+    getAllUsers(cursor: String, limit: Int!): GetAllUsersV1
     getProfile(id: String!) : User
 }
 
@@ -15,6 +15,8 @@ extend type Query {
      register(firstname: String!, lastname: String!, username: String!, password: String!, email: String! ): RegisterResponse
      login(email: String!, password: String!): LoginResponse
      updateUserInfo(firstname: String!, lastname: String!, username: String! bio: String!) : User
+     uploadProfilePicture(file: Upload!, userId: ID!): User
+     deleteProfilePicture(userId: ID!): User
 
  }
 
@@ -24,7 +26,8 @@ extend type Query {
      lastname: String!
      username: String!
      email: String!
-     bio: String!
+     bio: String
+     profilePicture: String
  }
 
  type UserResponse {
