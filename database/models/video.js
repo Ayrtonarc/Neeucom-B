@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Cada video pertenece a un usuario
       Video.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+      Video.hasMany(models.Like, { foreignKey: 'videoId', as: 'likes' });
     }
   }
 
