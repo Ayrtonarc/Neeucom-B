@@ -1,22 +1,38 @@
 const { gql } = require('apollo-server-express');
 
 module.exports = gql`
-scalar Date
+  scalar Date
 
-type MessageResponse {
+  enum MessageStatus {
+    sent
+    read
+  }
+
+  type MessageResponse {
     id: String!
-    text: String!
-    from: String
-    to: String!
+    content: String!
+    senderId: String!
+    recipientId: String!
+    status: MessageStatus!
     createdAt: Date
     updatedAt: Date
-}
-extend type Query{
-    getMessages(from: String! ) : [MessageResponse]
-}
+    sender: UserResponse
+    recipient: UserResponse
+  }
 
-extend type Mutation {
-    sendMessage(text: String!, to: String! ) : MessageResponse
-}
+  extend type Query {
+    getMessages(otherUserId: String!): [MessageResponse]
+  }
 
+  extend type Mutation {
+    sendMessage(content: String!, recipientId: String!): MessageResponse
+    markAsRead(messageId: String!): MessageResponse
+  }
+
+  type UserResponse {
+    id: String!
+    username: String!
+    firstname: String
+    lastname: String
+  }
 `;
